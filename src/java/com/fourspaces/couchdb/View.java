@@ -17,6 +17,13 @@
 
 package com.fourspaces.couchdb;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+
 /**
  * The View is the mechanism for performing Querys on a CouchDB instance. The view can be named or ad-hoc (see
  * AdHocView). (Currently [14 Sept 2007] named view aren't working in the mainline CouchDB code... but this _should_
@@ -29,7 +36,13 @@ package com.fourspaces.couchdb;
  *
  */
 public class View {
+
+	public enum StaleMode {
+		NONE, OK, UPDATE_AFTER
+	}
+
 	protected String key;
+	protected String keys;
 	protected String startKey;
 	protected String endKey;
 	protected Integer limit;
@@ -37,7 +50,8 @@ public class View {
 	protected Boolean reverse;
 	protected String skip;
 	protected Boolean group;
-	protected Boolean includeDocs;
+	protected boolean includeDocs = false;
+	protected StaleMode stale = StaleMode.NONE;
 
 	protected String name;
 	protected Document document;
@@ -124,8 +138,8 @@ public class View {
 			}
 			queryString += "update=true";
 		}
-		if (includeDocs != null && includeDocs.booleanValue()) {
-			if (!queryString.equals("")) {
+		if (includeDocs != false) {
+			if (queryString.length() > 0) {
 				queryString += "&";
 			}
 			queryString += "include_docs=true";
@@ -141,6 +155,22 @@ public class View {
 				queryString += "&";
 			}
 			queryString += "group=true";
+		}
+		if (keys != null) {
+			if (!queryString.equals("")) {
+				queryString += "&";
+			}
+			queryString += "keys=" + keys;
+		}
+		if (stale != null && stale != StaleMode.NONE) {
+			if (!queryString.equals("")) {
+				queryString += "&";
+			}
+			if (stale == StaleMode.OK) {
+				queryString += "stale=ok";
+			} else if (stale == StaleMode.UPDATE_AFTER) {
+				queryString += "stale=update_after";
+			}
 		}
 		return queryString.equals("") ? null : queryString;
 
@@ -158,25 +188,12 @@ public class View {
 		setLimit(count);
 	}
 
-	public void setKey(String key) {
-		this.key = key;
-	}
-
 	public void setLimit(Integer limit) {
 		this.limit = limit;
 	}
 
 	public void setGroup(Boolean group) {
 		this.group = group;
-	}
-
-	/**
-	 * Stop listing at this key
-	 *
-	 * @param endKey
-	 */
-	public void setEndKey(String endKey) {
-		this.endKey = endKey;
 	}
 
 	/**
@@ -204,15 +221,6 @@ public class View {
 	}
 
 	/**
-	 * Start listing at this key
-	 *
-	 * @param startKey
-	 */
-	public void setStartKey(String startKey) {
-		this.startKey = startKey;
-	}
-
-	/**
 	 * Not sure... might be for batch updates, but not sure.
 	 *
 	 * @param update
@@ -221,8 +229,17 @@ public class View {
 		this.update = update;
 	}
 
+	/**
+	 * @deprecated Use setIncludeDocs instead.
+	 * @param withDocs
+	 */
+	@Deprecated
 	public void setWithDocs(Boolean withDocs) {
 		this.includeDocs = withDocs;
+	}
+
+	public void setIncludeDocs(boolean includeDocs) {
+		this.includeDocs = includeDocs;
 	}
 
 	/**
@@ -252,4 +269,96 @@ public class View {
 		return function;
 	}
 
+	public void setStale(StaleMode stale) {
+		this.stale = stale;
+	}
+
+	public void setStartKey(final String key) {
+		startKey = quote(key);
+	}
+
+	public void setStartKeyArray(final String key) {
+		if (isNumber(key)) {
+			startKey = encode("[" + key + "]");
+		} else {
+			startKey = encode("[\"" + key + "\"]");
+		}
+	}
+
+	public void setStartKeyArray(final String... keys) {
+		this.setStartKey(keys);
+	}
+
+	public void setEndKey(final String key) {
+		endKey = quote(key);
+	}
+
+	public void setEndKeyArray(final String key) {
+		if (isNumber(key)) {
+			endKey = encode("[" + key + "]");
+		} else {
+			endKey = encode("[\"" + key + "\"]");
+		}
+	}
+
+	public void setEndKeyArray(final String... keys) {
+		this.setEndKey(keys);
+	}
+
+	public void setStartKey(final String... keys) {
+		startKey = toJsonArray(keys);
+	}
+
+	public void setEndKey(final String... keys) {
+		endKey = toJsonArray(keys);
+	}
+
+	public void setKey(final String key) {
+		this.key = quote(key);
+	}
+
+	public void setKey(final String... keys) {
+		key = toJsonArray(keys);
+	}
+
+	public void setKeys(List<String> keys) {
+		this.keys = toJsonArray(keys.toArray(new String[keys.size()]));
+	}
+
+	private String quote(final String string) {
+		return encode("\"" + string + "\"");
+	}
+
+	private String encode(final String string) {
+		try {
+			return URLEncoder.encode(string, "UTF-8");
+		} catch (final UnsupportedEncodingException e) {
+			// Since we're using 'UTF-8', this Exception should never occur.
+			return "";
+		}
+	}
+
+	private String toJsonArray(final String[] strs) {
+		final List<String> strings = new ArrayList<String>();
+		for (final String string : strs) {
+			if (isNumber(string) || isPlaceholder(string) || isArray(string)) {
+				strings.add(string);
+			} else {
+				strings.add("\"" + string + "\"");
+			}
+		}
+		return encode("[" + StringUtils.join(strings, ",") + "]");
+	}
+
+	private boolean isNumber(final String string) {
+		return string.matches("^[0-9]+$");
+	}
+
+	private boolean isPlaceholder(final String string) {
+		return string.equals("{}");
+	}
+
+	private boolean isArray(final String string) {
+		return string.startsWith("[") && string.endsWith("]");
+	}
 }

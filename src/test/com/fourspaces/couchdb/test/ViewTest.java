@@ -18,6 +18,12 @@ package com.fourspaces.couchdb.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,6 +35,8 @@ import com.fourspaces.couchdb.AdHocView;
 import com.fourspaces.couchdb.Database;
 import com.fourspaces.couchdb.Document;
 import com.fourspaces.couchdb.Session;
+import com.fourspaces.couchdb.View;
+import com.fourspaces.couchdb.View.StaleMode;
 import com.fourspaces.couchdb.ViewResults;
 
 public class ViewTest {
@@ -65,7 +73,6 @@ public class ViewTest {
 		assertNotNull(results);
 		int adhoc = foo.adhoc("function (doc) {emit(null, doc);}").getResults().size();
 		assertEquals(all, adhoc);
-
 	}
 
 	/**
@@ -73,7 +80,6 @@ public class ViewTest {
 	 */
 	@Test
 	public void adhoc_query_string() {
-
 		// Establish that all results are returned with our view
 		int all = foo.getAllDocuments().getResults().size();
 		AdHocView view = new AdHocView("function (doc) { emit(null, doc);}");
@@ -88,7 +94,6 @@ public class ViewTest {
 
 		assertNotNull(results);
 		assertEquals("Expected a subset of records to be returned", 2, results.getResults().size());
-
 	}
 
 	@Test
@@ -121,7 +126,145 @@ public class ViewTest {
 
 		foo.deleteDocument(d);
 		foo.deleteDocument(d2);
+	}
 
+	@Test
+	public void setKeyShouldAcceptSingleArgument() {
+		final View v = new View(null);
+		v.setKey("foo");
+		assertEncodedEquals("key", "\"foo\"", v.getQueryString());
+	}
+
+	@Test
+	public void setKeyShouldAcceptMultipleArgument() {
+		final View v = new View(null);
+		v.setKey("foo", "bar", "baz");
+		assertEncodedEquals("key", "[\"foo\",\"bar\",\"baz\"]", v.getQueryString());
+	}
+
+	@Test
+	public void setStartKeyShouldAcceptSingleArgument() {
+		final View v = new View(null);
+		v.setStartKey("foo");
+		assertEncodedEquals("startkey", "\"foo\"", v.getQueryString());
+	}
+
+	@Test
+	public void setStartKeyShouldAcceptSingleArgumentArray() {
+		final View v = new View(null);
+		v.setStartKeyArray("foo");
+		assertEncodedEquals("startkey", "[\"foo\"]", v.getQueryString());
+	}
+
+	@Test
+	public void setEndKeyShouldAcceptSingleArgumentArray() {
+		final View v = new View(null);
+		v.setEndKeyArray("foo");
+		assertEncodedEquals("endkey", "[\"foo\"]", v.getQueryString());
+	}
+
+	@Test
+	public void setEndKeyShouldAcceptSingleArgument() {
+		final View v = new View(null);
+		v.setEndKey("foo");
+		assertEncodedEquals("endkey", "\"foo\"", v.getQueryString());
+	}
+
+	@Test
+	public void setStartKeyShouldAcceptMultipleArgument() {
+		final View v = new View(null);
+		v.setStartKey("foo", "bar", "baz");
+		assertEncodedEquals("startkey", "[\"foo\",\"bar\",\"baz\"]", v.getQueryString());
+	}
+
+	@Test
+	public void setEndKeyShouldAcceptMultipleArgument() {
+		final View v = new View(null);
+		v.setEndKey("foo", "bar", "baz");
+		assertEncodedEquals("endkey", "[\"foo\",\"bar\",\"baz\"]", v.getQueryString());
+	}
+
+	@Test
+	public void keysShouldSupportEmptyObject() {
+		final View v = new View(null);
+		v.setKey("foo", "bar", "{}");
+		assertEncodedEquals("key", "[\"foo\",\"bar\",{}]", v.getQueryString());
+	}
+
+	@Test
+	public void arrayKeysShouldNotEnquoteNumbers() {
+		final View v = new View(null);
+		v.setKey("foo", "bar", "2");
+		assertEncodedEquals("key", "[\"foo\",\"bar\",2]", v.getQueryString());
+	}
+
+	@Test
+	public void singleArrayKeysShouldNotEnquoteNumbers() {
+		final View v1 = new View(null);
+		final View v2 = new View(null);
+		v1.setStartKeyArray("2");
+		v2.setEndKeyArray("2");
+		assertEncodedEquals("startkey", "[2]", v1.getQueryString());
+		assertEncodedEquals("endkey", "[2]", v2.getQueryString());
+	}
+
+	@Test
+	public void shouldSupportAddingKeysParameter() {
+		String[] stringKeys = new String[] { "foo", "bar" };
+		String[] numberKeys = new String[] { "123", "456" };
+		String[] mixedKeys = new String[] { "foo", "123" };
+		String[] arrayKeys = new String[] { "[\"foo\",123]", "[456,\"bar\"]" };
+		String[] emptyKeys = new String[0];
+		final View v1 = new View(null);
+		final View v2 = new View(null);
+		final View v3 = new View(null);
+		final View v4 = new View(null);
+		final View v5 = new View(null);
+		v1.setKeys(Arrays.asList(stringKeys));
+		v2.setKeys(Arrays.asList(numberKeys));
+		v3.setKeys(Arrays.asList(mixedKeys));
+		v4.setKeys(Arrays.asList(arrayKeys));
+		v5.setKeys(Arrays.asList(emptyKeys));
+		assertEncodedEquals("keys", "[\"foo\",\"bar\"]", v1.getQueryString());
+		assertEncodedEquals("keys", "[123,456]", v2.getQueryString());
+		assertEncodedEquals("keys", "[\"foo\",123]", v3.getQueryString());
+		assertEncodedEquals("keys", "[[\"foo\",123],[456,\"bar\"]]", v4.getQueryString());
+		assertEncodedEquals("keys", "[]", v5.getQueryString());
+	}
+
+	@Test
+	public void shouldSupportStaleViews() {
+		final View v1 = new View(null);
+		final View v2 = new View(null);
+		final View v3 = new View(null);
+		final View v4 = new View(null);
+		v1.setStale(StaleMode.NONE);
+		v2.setStale(StaleMode.OK);
+		v3.setStale(StaleMode.UPDATE_AFTER);
+		assertNull(v1.getQueryString());
+		assertEncodedEquals("stale", "ok", v2.getQueryString());
+		assertEncodedEquals("stale", "update_after", v3.getQueryString());
+		assertNull(v4.getQueryString());
+	}
+
+	@Test
+	public void shouldSupportIncludeDocsParameter() {
+		final View v1 = new View(null);
+		final View v2 = new View(null);
+		final View v3 = new View(null);
+		v1.setIncludeDocs(true);
+		v2.setIncludeDocs(false);
+		assertEncodedEquals("include_docs", "true", v1.getQueryString());
+		assertNull(v2.getQueryString());
+		assertNull(v3.getQueryString());
+	}
+
+	private void assertEncodedEquals(final String key, final String expected, final String actual) {
+		try {
+			assertEquals(key + "=" + URLEncoder.encode(expected, "UTF-8"), actual);
+		} catch (final UnsupportedEncodingException e) {
+			fail(e.getLocalizedMessage());
+		}
 	}
 
 }
