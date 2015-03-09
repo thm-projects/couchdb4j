@@ -269,6 +269,10 @@ public class View {
 		return function;
 	}
 
+	/**
+	 * Sets the 'stale' parameter. StaleMode corresponds to the values 'ok' and 'update_after'.
+	 * @param stale
+	 */
 	public void setStale(StaleMode stale) {
 		this.stale = stale;
 	}
@@ -277,6 +281,10 @@ public class View {
 		startKey = quote(key);
 	}
 
+	/**
+	 * Use this method if you need to add a single key parameter inside an array.
+	 * @param key
+	 */
 	public void setStartKeyArray(final String key) {
 		if (isNumber(key)) {
 			startKey = encode("[" + key + "]");
@@ -285,14 +293,24 @@ public class View {
 		}
 	}
 
+	public void setStartKey(final String... keys) {
+		startKey = toJsonArray(keys);
+	}
+
+	/**
+	 * This is equivalent to calling setStartKey.
+	 *
+	 * We provide this method for convenience.
+	 * @param keys
+	 */
 	public void setStartKeyArray(final String... keys) {
 		this.setStartKey(keys);
 	}
 
-	public void setEndKey(final String key) {
-		endKey = quote(key);
-	}
-
+	/**
+	 * Use this method if you need to add a single key parameter inside an array.
+	 * @param key
+	 */
 	public void setEndKeyArray(final String key) {
 		if (isNumber(key)) {
 			endKey = encode("[" + key + "]");
@@ -301,12 +319,18 @@ public class View {
 		}
 	}
 
+	/**
+	 * This is equivalent to calling setEndKey.
+	 *
+	 * We provide this method for convenience.
+	 * @param keys
+	 */
 	public void setEndKeyArray(final String... keys) {
 		this.setEndKey(keys);
 	}
 
-	public void setStartKey(final String... keys) {
-		startKey = toJsonArray(keys);
+	public void setEndKey(final String key) {
+		endKey = quote(key);
 	}
 
 	public void setEndKey(final String... keys) {
@@ -321,6 +345,10 @@ public class View {
 		key = toJsonArray(keys);
 	}
 
+	/**
+	 * Sets the 'keys' parameter. Instead of a single key, this parameter allows to specify multiple keys at once.
+	 * @param keys
+	 */
 	public void setKeys(List<String> keys) {
 		this.keys = toJsonArray(keys.toArray(new String[keys.size()]));
 	}
