@@ -1,11 +1,14 @@
 CouchDB4J
 ---------
-14 Sept 2007
 
-Marcus R. Breese
-Fourspaces Consulting, LLC.
-mbreese@gmail.com
+This is a fork of the original [CouchDB4J library](https://github.com/mbreese/couchdb4j).
+Since the old project has not seen any activity, we will update this library with the goal of introducing some new features.
 
+CouchDB4J is originally developed by:
+
+	Marcus R. Breese
+	Fourspaces Consulting, LLC.
+	mbreese@gmail.com
 
 Introduction
 ------------
@@ -57,6 +60,7 @@ over simplification, but you get the idea.
 
 Example
 -------
+```
 Session s = new Session("localhost",5984);
 Database db = s.getDatabase("foodb");
 
@@ -69,11 +73,9 @@ newdoc.put("foo","baz");
 db.saveDocument(newdoc); // auto-generated id given by the database
 
 // Running a view
-
 ViewResult result = db.getAllDocuments(); // same as db.view("_all_dbs");
 for (Document d: result.getResults()) {
 	System.out.println(d.getId());
-
 	/*
 		ViewResults don't actually contain the full document, only what the view
 		returned.  So, in order to get the full document, you need to request a
@@ -83,29 +85,8 @@ for (Document d: result.getResults()) {
 }
 
 // Ad-Hoc view
-
 ViewResult resultAdHoc = db.adhoc("function (doc) { if (doc.foo=='bar') { emit(null, doc); }}");
-
-Requirements
-------------
-The libraries that are included in the SVN src/lib file are required to use CouchDB4J.
-There are two main dependecies that CouchDB4J relies upon: Apache Commons HttpClient and
-JSON-lib.sf.net.  Each of these brings with it a set of other dependencies, so we end up
-with the following:
-
-Apache commons:
-commons-httpclient-3.1.jar
-commons-beanutils.jar
-commons-codec-1.3.jar
-commons-collections.jar
-commons-lang.jar
-commons-logging-1.1.jar
-
-SourceForge:
-json-lib-2.0-jdk15.jar
-ezmorph-1.0.3.jar
-
-(Version numbers are those used at the time...)
+```
 
 License
 -------
