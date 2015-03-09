@@ -121,4 +121,11 @@ http://maven.apache.org/maven-v4_0_0.xsd">
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
 	</repositories>
+
+	<distributionManagement>
+		<site>
+			<id>website</id>
+			<url>https://arsnova.eu</url>
+		</site>
+	</distributionManagement>
 </project>
