@@ -15,13 +15,14 @@
  */
 package com.fourspaces.couchdb;
 
-import java.util.List;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public class RowResult<V> {
 
 	private String id;
 
-	private List<Object> key;
+	@JsonDeserialize(using = RowKeyDeserializer.class)
+	private RowKey key;
 
 	private V value;
 
@@ -33,11 +34,11 @@ public class RowResult<V> {
 		this.id = id;
 	}
 
-	public List<Object> getKey() {
+	public RowKey getKey() {
 		return key;
 	}
 
-	public void setKey(List<Object> key) {
+	public void setKey(RowKey key) {
 		this.key = key;
 	}
 

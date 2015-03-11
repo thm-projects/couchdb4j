@@ -18,8 +18,6 @@ package com.fourspaces.couchdb.test;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.util.List;
-
 import net.sf.json.JSONObject;
 
 import org.junit.After;
@@ -29,6 +27,7 @@ import org.junit.Test;
 import com.fourspaces.couchdb.Database;
 import com.fourspaces.couchdb.Document;
 import com.fourspaces.couchdb.Results;
+import com.fourspaces.couchdb.RowKey;
 import com.fourspaces.couchdb.RowResult;
 import com.fourspaces.couchdb.Session;
 import com.fourspaces.couchdb.View;
@@ -42,7 +41,7 @@ public class ResultsTest {
 	public void createTestDB() throws Exception {
 		session.createDatabase("foo");
 		db = session.getDatabase("foo");
-		String json = "{\"_id\": \"_design/test\", \"language\": \"javascript\", \"views\": {\"complex_keys\": {\"map\":\" function (doc) { emit([doc.aString, doc.aNumber], doc); }\" } } }";
+		String json = "{\"_id\": \"_design/test\", \"language\": \"javascript\", \"views\": {\"array_keys\": {\"map\":\" function (doc) { emit([doc.aString, doc.aNumber], doc); }\" }, \"single_keys\": {\"map\":\" function (doc) { emit(doc.aString, doc); }\" } } } }";
 		JSONObject obj = JSONObject.fromObject(json);
 		db.saveDocument(new Document(obj));
 	}
@@ -59,19 +58,73 @@ public class ResultsTest {
 		d.put("aNumber", 42);
 		d.put("other", "stuff");
 		db.saveDocument(d);
-		db.saveDocument(d);
+
+		View view = new View("test/array_keys");
+		Results<Object> result = db.queryView(view, Object.class);
+		for (RowResult<Object> row : result.getRows()) {
+			RowKey key = row.getKey();
+			assertEquals(key.getString(0), "this is a string");
+			assertEquals(key.getInt(1), 42);
+		}
+	}
+
+	@Test
+	public void shouldHandleSingleKey() throws IOException {
+		Document d = new Document();
+		d.put("aString", "this is a string");
+		d.put("aNumber", 42);
+		d.put("other", "stuff");
 		db.saveDocument(d);
 
-		View view = new View("test/complex_keys");
-		Results<Object> actual = db.queryView(view);
-		for (RowResult<Object> row : actual.getRows()) {
-			/*
-			 * The idea is to generate either a list of keys or a single key
-			 * based on the json content of the view.
-			 */
-			List<Object> key = row.getKey();
-			assertEquals(key.get(0), "this is a string");
-			assertEquals(key.get(1), 42);
+		View view = new View("test/single_keys");
+		Results<Object> result = db.queryView(view, Object.class);
+		for (RowResult<Object> row : result.getRows()) {
+			RowKey key = row.getKey();
+			assertEquals(key.getString(), "this is a string");
 		}
+	}
+
+	@Test
+	public void shouldDeserializeValueToGivenObjectType() throws IOException {
+		Document d = new Document();
+		d.put("aString", "this is a string");
+		d.put("aNumber", 42);
+		d.put("other", "stuff");
+		db.saveDocument(d);
+
+		View view = new View("test/single_keys");
+		Results<Entity> result = db.queryView(view, Entity.class);
+		for (RowResult<Entity> row : result.getRows()) {
+			Entity e = row.getValue();
+			assertEquals(e.aString, "this is a string");
+		}
+	}
+
+	@Test
+	public void shouldSetViewMetadata() throws IOException {
+		db.saveDocument(new Document());
+		db.saveDocument(new Document());
+		db.saveDocument(new Document());
+		db.saveDocument(new Document());
+		db.saveDocument(new Document());
+
+		View view = new View("test/single_keys");
+		view.setSkip(2);
+		Results<Object> actual = db.queryView(view, Object.class);
+		assertEquals(5, actual.getTotalRows());
+		assertEquals(2, actual.getOffset());
+	}
+
+	public static class Entity {
+
+		public String _id;
+
+		public String _rev;
+
+		public String aString;
+
+		public int aNumber;
+
+		public String other;
 	}
 }

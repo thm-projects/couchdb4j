@@ -18,11 +18,13 @@
 package com.fourspaces.couchdb;
 
 import java.io.IOException;
+
 import com.fourspaces.couchdb.util.JSONUtils;
+
 import static com.fourspaces.couchdb.util.JSONUtils.urlEncodePath;
 import net.sf.json.*;
-
 import net.sf.json.util.JSONStringer;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -145,11 +147,11 @@ public class Database {
 		return view(view, true);
 	}
 
-	public <T> Results<T> queryView(View view) {
+	public <T> Results<T> queryView(View view, Class<T> klass) {
 		String url = getViewUrl(view, true);
 		CouchResponse resp = session.get(url, view.getQueryString());
 		if (resp.isOk()) {
-			Results<T> results = new Results<T>(resp.getBody());
+			Results<T> results = new Results<T>(resp.getBody(), klass);
 			return results;
 		}
 		return null;

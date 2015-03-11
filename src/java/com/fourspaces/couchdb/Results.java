@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -31,18 +31,28 @@ public class Results<T> {
 
 	private List<RowResult<T>> rows;
 
-	public Results(String body) {
+	public Results(String body, Class<T> klass) {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
+			JavaType rowResultType = mapper.getTypeFactory().constructParametrizedType(RowResult.class, RowResult.class, klass);
+			JavaType listType = mapper.getTypeFactory().constructParametrizedType(List.class, List.class, rowResultType);
 			JsonNode node = mapper.readTree(body);
 			this.totalRows = node.get("total_rows").asInt();
 			this.offset = node.get("offset").asInt();
-			this.rows = mapper.readValue(node.get("rows").toString(), new TypeReference<List<RowResult<T>>>(){});
+			this.rows = mapper.readValue(node.get("rows").toString(), listType);
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public int getTotalRows() {
+		return this.totalRows;
+	}
+
+	public int getOffset() {
+		return this.offset;
 	}
 
 	public List<RowResult<T>> getRows() {

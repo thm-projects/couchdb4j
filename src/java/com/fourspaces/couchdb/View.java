@@ -48,7 +48,7 @@ public class View {
 	protected Integer limit;
 	protected Boolean update;
 	protected Boolean reverse;
-	protected String skip;
+	protected int skip;
 	protected Boolean group;
 	protected boolean includeDocs = false;
 	protected StaleMode stale = StaleMode.NONE;
@@ -120,7 +120,7 @@ public class View {
 			}
 			queryString += "endkey=" + endKey;
 		}
-		if (skip != null) {
+		if (skip != 0) {
 			if (!queryString.equals("")) {
 				queryString += "&";
 			}
@@ -216,7 +216,7 @@ public class View {
 	 *
 	 * @param skip
 	 */
-	public void setSkip(String skip) {
+	public void setSkip(int skip) {
 		this.skip = skip;
 	}
 
