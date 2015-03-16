@@ -21,6 +21,11 @@ http://maven.apache.org/maven-v4_0_0.xsd">
 					<target>1.5</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.1</version>
+			</plugin>
 		</plugins>
 	</build>
 
