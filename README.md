@@ -19,6 +19,19 @@ changed since then.
 
 So, since that wasn't going to work, I set about to write my own.
 
+Maven
+-----
+
+To use this library, you need to use following Maven dependency:
+
+```xml
+<dependency>
+  <groupId>de.thm.couchdb4j</groupId>
+  <artifactId>couchdb4j</artifactId>
+  <version>${couchdb4j-version}</version>
+</dependency>
+```
+
 Usage
 -----
 Like CouchDB itself, the API is fairly simple.  There are 5 main objects:
@@ -56,11 +69,9 @@ To explain it in SQL terms, you can retrieve as much or as little of a row as yo
 A Document is like the complete row of a table, and the View is like a SQL SELECT. (This is a gross
 over simplification, but you get the idea.
 
-
-
 Example
 -------
-```
+```java
 Session s = new Session("localhost",5984);
 Database db = s.getDatabase("foodb");
 
