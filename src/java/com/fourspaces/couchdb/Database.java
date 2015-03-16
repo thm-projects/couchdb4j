@@ -147,6 +147,12 @@ public class Database {
 		return view(view, true);
 	}
 
+	/**
+	 * Runs a named view on the database and converts the results to the given object class.
+	 * @param view The view that is to be executed
+	 * @param klass The type which should hold the view results
+	 * @return
+	 */
 	public <T> Results<T> queryView(View view, Class<T> klass) {
 		String url = getViewUrl(view, true);
 		CouchResponse resp = session.get(url, view.getQueryString());

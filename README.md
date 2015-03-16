@@ -72,7 +72,16 @@ Document newdoc = new Document();
 newdoc.put("foo","baz");
 db.saveDocument(newdoc); // auto-generated id given by the database
 
-// Running a view
+// Running a view that returns results of the expected type
+View view = new View("design_doc/view_name");
+// The view returns contents that resemble the structure of a class named `Entity`
+Results<Entity> result = db.queryView(view, Entity.class);
+for (RowResult<Entity> row : result.getRows()) {
+	Entity e = row.getValue();
+	// Do something with `e` ...
+}
+
+// Running a view (legacy method)
 ViewResult result = db.getAllDocuments(); // same as db.view("_all_dbs");
 for (Document d: result.getResults()) {
 	System.out.println(d.getId());
@@ -95,5 +104,6 @@ LICENSE.TXT file.
 
 Testing
 ---------
-If you are running tests against a CouchDB instance that isn't on localhost:5984, you need to alter the
-src/test/couchdb-test.properties file to contain the host and port of your test server.
+If you are running tests against a CouchDB instance that isn't on `localhost:5984`, you need to copy the
+contents of the `src/test/couchdb-test.properties.default` file and save it without the `.default` suffix.
+This file is kept out of the repository, so you can safely make changes to it without affecting other developers.
