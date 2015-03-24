@@ -123,7 +123,7 @@ public class Database {
 	 */
 	public ViewResults getAllDocumentsWithCount(int count) {
 		View v = new View("_all_docs");
-		v.setCount(count);
+		v.setLimit(count);
 		return view(v, false);
 	}
 
