@@ -33,24 +33,29 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.params.AllClientPNames;
-import org.apache.http.client.params.ClientPNames;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
 
 /**
  * The Session is the main connection to the CouchDB instance.  However, you'll only use the Session
@@ -82,16 +87,23 @@ public class Session {
 	protected CouchResponse lastResponse;
 
 	protected HttpClient httpClient;
-    protected HttpParams httpParams;
+
+	protected HttpClientContext httpContext;
+	protected HttpClientConnectionManager connManager;
+	protected RequestConfig requestConfig;
+	protected String userAgent = "couchdb4j";
 
 	/**
-	 * Constructor for obtaining a Session with an HTTP-AUTH username/password and (optionally) a secure connection
-	 * This isn't supported by CouchDB - you need a proxy in front to use this
+	 * Constructor for obtaining a Session with an HTTP-AUTH username/password
+	 * and (optionally) a secure connection This isn't supported by CouchDB -
+	 * you need a proxy in front to use this
+	 *
 	 * @param host - hostname
 	 * @param port - port to use
 	 * @param user - username
 	 * @param pass - password
-	 * @param secure  - use an SSL connection?
+	 * @param usesAuth
+	 * @param secure - use an SSL connection?
 	 */
 	public Session(String host, int port, String user, String pass, boolean usesAuth, boolean secure) {
 		this.host = host;
@@ -101,24 +113,28 @@ public class Session {
 		this.usesAuth = usesAuth;
 		this.secure = secure;
 
-        httpParams = new BasicHttpParams();
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
+		PlainConnectionSocketFactory plainsf = PlainConnectionSocketFactory.getSocketFactory();
+		LayeredConnectionSocketFactory sslsf = SSLConnectionSocketFactory.getSocketFactory();
+		Registry<ConnectionSocketFactory> r = RegistryBuilder.<ConnectionSocketFactory> create()
+				.register("http", plainsf).register("https", sslsf).build();
+		this.connManager = new PoolingHttpClientConnectionManager(r);
 
-        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+		this.requestConfig = RequestConfig.custom().setConnectTimeout(15 * 1000).setSocketTimeout((30 * 1000))
+				.setAuthenticationEnabled(usesAuth).build();
 
-        ThreadSafeClientConnManager connManager = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
-		DefaultHttpClient defaultClient = new DefaultHttpClient(connManager, httpParams);
+		this.httpContext = HttpClientContext.create();
 		if (user != null) {
-			defaultClient.getCredentialsProvider().setCredentials( AuthScope.ANY, new UsernamePasswordCredentials(user, pass) );
+			CredentialsProvider credsProvider = new BasicCredentialsProvider();
+			credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, pass));
+			this.httpContext.setCredentialsProvider(credsProvider);
 		}
 
-		this.httpClient = defaultClient;
+		this.httpClient = createHttpClient();
+	}
 
-		setUserAgent("couchdb4j");
-		setSocketTimeout( (30 * 1000) );
-		setConnectionTimeout( (15 * 1000) );
-
+	private CloseableHttpClient createHttpClient() {
+		return HttpClientBuilder.create().setConnectionManager(this.connManager).setUserAgent(this.userAgent)
+				.setDefaultRequestConfig(this.requestConfig).build();
 	}
 
 	/**
@@ -453,10 +469,7 @@ public class Session {
 		HttpEntity entity = null;
 
 		try {
-			if (usesAuth) {
-				req.getParams().setBooleanParameter(ClientPNames.HANDLE_AUTHENTICATION, true);
-			}
-			httpResponse = httpClient.execute(req);
+			httpResponse = httpClient.execute(req, httpContext);
 			entity = httpResponse.getEntity();
 			lastResponse = new CouchResponse(req, httpResponse);
 		} catch (IOException e) {
@@ -464,7 +477,7 @@ public class Session {
 		} finally {
 			  if (entity != null) {
 				try {
-					entity.consumeContent();
+					EntityUtils.consume(entity);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -484,17 +497,20 @@ public class Session {
 
 	public void setUserAgent(String ua)
 	{
-		httpParams.setParameter(AllClientPNames.USER_AGENT, ua);
+		this.userAgent = ua;
+		this.httpClient = createHttpClient();
 	}
 
 	public void setConnectionTimeout(int milliseconds)
 	{
-		httpParams.setIntParameter(AllClientPNames.CONNECTION_TIMEOUT, milliseconds);
+		this.requestConfig = RequestConfig.copy(this.requestConfig).setConnectTimeout(milliseconds).build();
+		this.httpClient = createHttpClient();
 	}
 
 	public void setSocketTimeout(int milliseconds)
 	{
-		httpParams.setIntParameter(AllClientPNames.SO_TIMEOUT, milliseconds);
+		this.requestConfig = RequestConfig.copy(this.requestConfig).setSocketTimeout(milliseconds).build();
+		this.httpClient = createHttpClient();
 	}
 
 	protected String encodeParameter(String paramValue) {
