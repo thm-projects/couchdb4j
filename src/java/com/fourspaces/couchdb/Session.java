@@ -299,8 +299,10 @@ public class Session {
 	CouchResponse post(String url, String content) {
 		return post(url,content,null);
 	}
+
 	/**
 	 * Send a POST with a body and query string
+	 *
 	 * @param url
 	 * @param content
 	 * @param queryString
@@ -308,24 +310,19 @@ public class Session {
 	 */
 	CouchResponse post(String url, String content, String queryString) {
 		HttpPost post = new HttpPost(buildUrl(url, queryString));
-		if (content!=null) {
+		if (content != null) {
 			HttpEntity entity;
-			try {
-			    entity = new StringEntity(content, DEFAULT_CHARSET);
-				post.setEntity(entity);
-				post.setHeader(new BasicHeader("Content-Type", MIME_TYPE_JSON));
-			} catch (UnsupportedEncodingException e) {
-				log.error(ExceptionUtils.getStackTrace(e));
-			}
+			entity = new StringEntity(content, DEFAULT_CHARSET);
+			post.setEntity(entity);
+			post.setHeader(new BasicHeader("Content-Type", MIME_TYPE_JSON));
 		}
-		
-		
 		return http(post);
 	}
-	
+
 	/**
 	 * Send a POST with a body, query string and specified content type
-	 * @author rwilson 
+	 *
+	 * @author rwilson
 	 * @param url
 	 * @param ctype
 	 * @param content
@@ -333,23 +330,18 @@ public class Session {
 	 * @return
 	 */
 	CouchResponse post(String url, String ctype, String content, String queryString) {
-	  HttpPost post = new HttpPost(buildUrl(url, queryString));
-	  if (content!=null) {
-	    HttpEntity entity;
-			try {
-			  entity = new StringEntity(content, DEFAULT_CHARSET);
-				post.setEntity(entity);
-				if (ctype != null) {
-				  post.setHeader(new BasicHeader("Content-Type", ctype));
-				}
-			} catch (UnsupportedEncodingException e) {
-				log.error(ExceptionUtils.getStackTrace(e));
+		HttpPost post = new HttpPost(buildUrl(url, queryString));
+		if (content != null) {
+			HttpEntity entity;
+			entity = new StringEntity(content, DEFAULT_CHARSET);
+			post.setEntity(entity);
+			if (ctype != null) {
+				post.setHeader(new BasicHeader("Content-Type", ctype));
 			}
 		}
-		
 		return http(post);
 	}
-	
+
 	/**
 	 * Send a PUT  (for creating databases)
 	 * @param url
@@ -358,47 +350,42 @@ public class Session {
 	CouchResponse put(String url) {
 		return put(url,null);
 	}
+
 	/**
 	 * Send a PUT with a body (for creating documents)
+	 *
 	 * @param url
 	 * @param content
 	 * @return
 	 */
 	CouchResponse put(String url, String content) {
 		HttpPut put = new HttpPut(buildUrl(url));
-		if (content!=null) {
+		if (content != null) {
 			HttpEntity entity;
-			try {
-				entity = new StringEntity(content, DEFAULT_CHARSET);
-				put.setEntity(entity);
-				put.setHeader(new BasicHeader("Content-Type", MIME_TYPE_JSON));
-			} catch (UnsupportedEncodingException e) {
-				log.error(ExceptionUtils.getStackTrace(e));
-			}
+			entity = new StringEntity(content, DEFAULT_CHARSET);
+			put.setEntity(entity);
+			put.setHeader(new BasicHeader("Content-Type", MIME_TYPE_JSON));
 		}
 		return http(put);
 	}
-	
+
 	/**
 	 * Overloaded Put using by attachments
 	 */
 	CouchResponse put(String url, String ctype, String content) {
 		HttpPut put = new HttpPut(buildUrl(url));
-		if (content!=null) {
+		if (content != null) {
 			HttpEntity entity;
-			try {
-				entity = new StringEntity(content, DEFAULT_CHARSET);
-				put.setEntity(entity);
-				put.setHeader(new BasicHeader("Content-Type", ctype));
-			} catch (UnsupportedEncodingException e) {
-				log.error(ExceptionUtils.getStackTrace(e));
-			}
+			entity = new StringEntity(content, DEFAULT_CHARSET);
+			put.setEntity(entity);
+			put.setHeader(new BasicHeader("Content-Type", ctype));
 		}
 		return http(put);
 	}
-	
+
 	/**
 	 * Overloaded Put using by attachments and query string
+	 *
 	 * @author rwilson
 	 * @param url
 	 * @param ctype
@@ -408,21 +395,17 @@ public class Session {
 	 */
 	CouchResponse put(String url, String ctype, String content, String queryString) {
 		HttpPut put = new HttpPut(buildUrl(url, queryString));
-		if (content!=null) {
+		if (content != null) {
 			HttpEntity entity;
-			try {
-				entity = new StringEntity(content, DEFAULT_CHARSET);
-				put.setEntity(entity);
-				if (ctype!=null) {
-					put.setHeader(new BasicHeader("Content-Type", ctype));
-				}
-			} catch (UnsupportedEncodingException e) {
-				log.error(ExceptionUtils.getStackTrace(e));
+			entity = new StringEntity(content, DEFAULT_CHARSET);
+			put.setEntity(entity);
+			if (ctype != null) {
+				put.setHeader(new BasicHeader("Content-Type", ctype));
 			}
 		}
 		return http(put);
 	}
-	
+
 	/**
 	 * Send a GET request
 	 * @param url

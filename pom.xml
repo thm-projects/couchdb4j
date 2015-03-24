@@ -97,7 +97,7 @@ http://maven.apache.org/maven-v4_0_0.xsd">
 			<!-- Project is currently not compatible with httpclient >= 4.3.2 -->
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.3.1</version>
+			<version>4.4</version>
 		</dependency>
 	</dependencies>
 
