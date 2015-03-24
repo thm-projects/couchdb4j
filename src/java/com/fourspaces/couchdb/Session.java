@@ -31,12 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.BasicHttpParams;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
@@ -47,10 +41,16 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.AllClientPNames;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 
 /**
  * The Session is the main connection to the CouchDB instance.  However, you'll only use the Session
@@ -62,7 +62,7 @@ import org.apache.http.message.BasicHeader;
  * Ex usage: <br>
  * Session session = new Session(host,port);
  * Database db = session.getDatabase("dbname");
- * 
+ *
  * @author mbreese
  * @author brennanjubb - HTTP-Auth username/pass
  */
@@ -70,7 +70,7 @@ public class Session {
 	private static final String DEFAULT_CHARSET = "UTF-8";
 
 	private static final String MIME_TYPE_JSON = "application/json";
-	
+
 	protected Log log = LogFactory.getLog(Session.class);
 	protected final String host;
 	protected final int port;
@@ -78,9 +78,9 @@ public class Session {
 	protected final String pass;
 	protected final boolean secure;
 	protected final boolean usesAuth;
-	
+
 	protected CouchResponse lastResponse;
-	
+
 	protected HttpClient httpClient;
     protected HttpParams httpParams;
 
@@ -112,13 +112,13 @@ public class Session {
 		if (user != null) {
 			defaultClient.getCredentialsProvider().setCredentials( AuthScope.ANY, new UsernamePasswordCredentials(user, pass) );
 		}
-		
+
 		this.httpClient = defaultClient;
 
 		setUserAgent("couchdb4j");
 		setSocketTimeout( (30 * 1000) );
 		setConnectionTimeout( (15 * 1000) );
-		
+
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class Session {
 	/**
 	 * Optional constructor that indicates an HTTPS connection should be used.
 	 * This isn't supported by CouchDB - you need a proxy in front to use this
-	 * 
+	 *
 	 * @param host
 	 * @param port
 	 * @param secure
@@ -152,7 +152,7 @@ public class Session {
 	public Session(String host, int port, boolean secure) {
 		this(host, port, null, null, false, secure);
 	}
-	
+
 	/**
 	 * Read-only
 	 * @return the host name
@@ -163,13 +163,13 @@ public class Session {
 
 	/**
 	 * read-only
-	 * 
+	 *
 	 * @return the port
 	 */
 	public int getPort() {
 		return port;
 	}
-	
+
 	/**
 	 * Is this a secured connection (set in constructor)
 	 * @return
@@ -177,7 +177,7 @@ public class Session {
 	public boolean isSecure() {
 		return secure;
 	}
-	
+
 	/**
 	 * Retrieves a list of all database names from the server
 	 * @return
@@ -185,14 +185,14 @@ public class Session {
 	public List<String> getDatabaseNames() {
 		CouchResponse resp = get("_all_dbs");
 		JSONArray ar = resp.getBodyAsJSONArray();
-		
+
 		List<String> dbs = new ArrayList<String>(ar.size());
 		for (int i=0 ; i< ar.size(); i++) {
 			dbs.add(ar.getString(i));
 		}
-		return dbs;	
+		return dbs;
 	}
-	
+
 	/**
 	 * Loads a database instance from the server
 	 * @param name
@@ -207,7 +207,7 @@ public class Session {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Creates a new database (if the name doesn't already exist)
 	 * @param name
@@ -229,10 +229,10 @@ public class Session {
 	/**
 	 * Deletes a database (by name) from the CouchDB server.
 	 * @param name
-	 * @return true = successful, false = an error occurred (likely the database named didn't exist) 
+	 * @return true = successful, false = an error occurred (likely the database named didn't exist)
 	 */
 	public boolean deleteDatabase(String name) {
-		return delete(name).isOk();		
+		return delete(name).isOk();
 	}
 	/**
 	 * Deletes a database from the CouchDB server
@@ -240,9 +240,9 @@ public class Session {
 	 * @return was successful
 	 */
 	public boolean deleteDatabase(Database db) {
-		return deleteDatabase(db.getName());		
+		return deleteDatabase(db.getName());
 	}
-	
+
 	/**
 	 * For a given url (such as /_all_dbs/), build the database connection url
 	 * @param url
@@ -251,28 +251,28 @@ public class Session {
 	protected String buildUrl(String url) {
 		return ( (secure) ? "https" : "http") + "://"+host+":"+port+"/" + url;
 	}
-	
+
 	protected String buildUrl(String url, String queryString) {
 		return (queryString != null) ? buildUrl(url) + "?" + queryString : buildUrl(url);
 	}
-	
+
 	protected String buildUrl(String url, NameValuePair[] params) {
-		
+
 		url = ( (secure) ? "https" : "http") + "://"+host+":"+port+"/" + url;
-		
+
 		if (params.length > 0) {
 			url += "?";
 		}
 		for (NameValuePair param : params) {
-			url += param.getName() + "=" + param.getValue(); 
+			url += param.getName() + "=" + param.getValue();
 		}
-		
+
 		return url;
-			
+
 	}
-	
+
 	/**
-	 * Package level access to send a DELETE request to the given URL 
+	 * Package level access to send a DELETE request to the given URL
 	 * @param url
 	 * @return
 	 */
@@ -289,7 +289,7 @@ public class Session {
 	CouchResponse post(String url) {
 		return post(url,null,null);
 	}
-	
+
 	/**
 	 * Send a POST with body
 	 * @param url
@@ -425,7 +425,7 @@ public class Session {
 		HttpGet get = new HttpGet(buildUrl(url, queryParams));
 		return http(get);
 	}
-	
+
 	/**
 	 * Send a GET request with a queryString (?foo=bar)
 	 * @param url
@@ -436,14 +436,14 @@ public class Session {
 		HttpGet get = new HttpGet(buildUrl(url, queryString));
 		return http(get);
 	}
-	
+
 	/**
 	 * Method that actually performs the GET/PUT/POST/DELETE calls.
 	 * Executes the given HttpMethod on the HttpClient object (one HttpClient per Session).
 	 * <p>
-	 * This returns a CouchResponse, which can be used to get the status of the call (isOk), 
+	 * This returns a CouchResponse, which can be used to get the status of the call (isOk),
 	 * and any headers / body that was sent back.
-	 * 
+	 *
 	 * @param req
 	 * @return the CouchResponse (status / error / json document)
 	 */
@@ -451,7 +451,7 @@ public class Session {
 
 		HttpResponse httpResponse = null;
 		HttpEntity entity = null;
-		
+
 		try {
 			if (usesAuth) {
 				req.getParams().setBooleanParameter(ClientPNames.HANDLE_AUTHENTICATION, true);
@@ -470,7 +470,7 @@ public class Session {
 				}
 			  }
 		}
-		return lastResponse;	
+		return lastResponse;
 	}
 
 	/**
@@ -481,17 +481,17 @@ public class Session {
 	public CouchResponse getLastResponse() {
 		return lastResponse;
 	}
-	
+
 	public void setUserAgent(String ua)
 	{
 		httpParams.setParameter(AllClientPNames.USER_AGENT, ua);
 	}
-	
+
 	public void setConnectionTimeout(int milliseconds)
 	{
 		httpParams.setIntParameter(AllClientPNames.CONNECTION_TIMEOUT, milliseconds);
 	}
-	
+
 	public void setSocketTimeout(int milliseconds)
 	{
 		httpParams.setIntParameter(AllClientPNames.SO_TIMEOUT, milliseconds);
@@ -501,31 +501,31 @@ public class Session {
 		try
 		{
 			return URLEncoder.encode(paramValue, DEFAULT_CHARSET);
-		} 
+		}
 		catch (UnsupportedEncodingException e)
 		{
 			throw new RuntimeException(e);
-		}	
+		}
 	}
-	
+
 	/**
-	 * This method will retrieve a list of replication tasks that are currently running under the couch server this 
+	 * This method will retrieve a list of replication tasks that are currently running under the couch server this
 	 * session is attached to.
-	 * 
+	 *
 	 * @return List of replication tasks running on the server.
 	 */
 	public List<ReplicationTask> getReplicationTasks() {
 		final List<ReplicationTask> replicationTasks = new ArrayList<ReplicationTask>();
 		CouchResponse resp = get("_active_tasks");
 		JSONArray ar = resp.getBodyAsJSONArray();
-		
+
 		for(int i = 0; i < ar.size(); i++) {
 			final JSONObject task = ar.getJSONObject(i);
-			
+
 			if(ReplicationTask.TASK_TYPE.equals(task.getString(CouchTask.TASK_TYPE_KEY))) {
-				final ReplicationTask replicationTask = new ReplicationTask(task.getString(CouchTask.TASK_TASK_KEY), 
+				final ReplicationTask replicationTask = new ReplicationTask(task.getString(CouchTask.TASK_TASK_KEY),
 						task.getString(CouchTask.TASK_STATUS_KEY), task.getString(CouchTask.TASK_PID_KEY));
-				
+
 				if(replicationTask.loadDetailsFromTask() == true) {
 					replicationTasks.add(replicationTask);
 				} else {
@@ -535,35 +535,35 @@ public class Session {
 				log.trace("Ignoring non-replication task.");
 			}
 		}
-		
+
 		log.trace("Found " + replicationTasks.size() + " replication tasks");
-		
+
 		return replicationTasks;
 	}
-	
+
 	/**
 	 * This method will attempt to start the replication task on the couch server instance this session is attached to.
-	 * 
+	 *
 	 * @param task Task to start on the server
 	 * @return True if the task was accepted by the couch server instance; False otherwise
 	 */
 	public boolean postReplicationTask(final ReplicationTask task) {
 		final String postUrl = buildUrl("_replicate");
-		
+
 		try {
-			
+
 			log.trace("Post URL: " + postUrl);
-			
+
 			final JSONObject replicateReq = task.getCreateRequest();
-			
+
 			log.trace(replicateReq.toString());
-			
+
 			CouchResponse resp = post("_replicate", replicateReq.toString());
-			
+
 			return (resp.getErrorId() == null);
 		} catch(Exception e) {
 			log.info("Exception while attempting to post replication task." + e);
-			
+
 		}
 		return false;
 	}
