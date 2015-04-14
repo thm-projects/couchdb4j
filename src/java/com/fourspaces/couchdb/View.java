@@ -22,6 +22,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.util.JSONUtils;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -289,7 +291,7 @@ public class View {
 		if (isNumber(key)) {
 			startKey = encode("[" + key + "]");
 		} else {
-			startKey = encode("[\"" + key + "\"]");
+			startKey = encode("[" + JSONUtils.quote(key) + "]");
 		}
 	}
 
@@ -315,7 +317,7 @@ public class View {
 		if (isNumber(key)) {
 			endKey = encode("[" + key + "]");
 		} else {
-			endKey = encode("[\"" + key + "\"]");
+			endKey = encode("[" + JSONUtils.quote(key) + "]");
 		}
 	}
 
@@ -354,7 +356,7 @@ public class View {
 	}
 
 	private String quote(final String string) {
-		return encode("\"" + string + "\"");
+		return encode(JSONUtils.quote(string));
 	}
 
 	private String encode(final String string) {
@@ -372,7 +374,7 @@ public class View {
 			if (isNumber(string) || isPlaceholder(string) || isArray(string)) {
 				strings.add(string);
 			} else {
-				strings.add("\"" + string + "\"");
+				strings.add(JSONUtils.quote(string));
 			}
 		}
 		return encode("[" + StringUtils.join(strings, ",") + "]");

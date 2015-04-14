@@ -259,6 +259,24 @@ public class ViewTest {
 		assertNull(v3.getQueryString());
 	}
 
+	@Test
+	public void shouldQuoteKeyParameters() {
+		final String aStringWithQuotes = "\"test\"";
+		final String aStringWithOneQuote = "te\"st";
+		final View v1 = new View(null);
+		final View v2 = new View(null);
+		final View v3 = new View(null);
+		final View v4 = new View(null);
+		v1.setKey(aStringWithQuotes);
+		v2.setKey(aStringWithOneQuote, aStringWithQuotes);
+		v3.setStartKeyArray(aStringWithQuotes);
+		v4.setEndKeyArray(aStringWithQuotes);
+		assertEncodedEquals("key", "\"\\\"test\\\"\"", v1.getQueryString());
+		assertEncodedEquals("key", "[\"te\\\"st\",\"\\\"test\\\"\"]", v2.getQueryString());
+		assertEncodedEquals("startkey", "[\"\\\"test\\\"\"]", v3.getQueryString());
+		assertEncodedEquals("endkey", "[\"\\\"test\\\"\"]", v4.getQueryString());
+	}
+
 	private void assertEncodedEquals(final String key, final String expected, final String actual) {
 		try {
 			assertEquals(key + "=" + URLEncoder.encode(expected, "UTF-8"), actual);
