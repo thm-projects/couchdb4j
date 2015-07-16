@@ -19,6 +19,7 @@ package com.fourspaces.couchdb;
 import java.io.IOException;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -119,7 +120,9 @@ public class CouchResponse {
 	 * Retrieves the body of the request as a JSONArray object. (such as listing database names)
 	 *
 	 * @return
+	 * @deprecated Use getBodyAsJsonNode instead
 	 */
+	@Deprecated
 	public JSONArray getBodyAsJSONArray() {
 		if (body == null) {
 			return null;
@@ -164,12 +167,28 @@ public class CouchResponse {
 	 * Returns the body of the response as a JSON Object (such as for a document)
 	 *
 	 * @return
+	 * @deprecated Use getBodyAsJsonNode instead
 	 */
+	@Deprecated
 	public JSONObject getBodyAsJSONObject() {
 		if (body == null) {
 			return null;
 		}
 		return JSONObject.fromObject(body);
+	}
+
+	/**
+	 * Returns the body of the response as a Jackson JsonNode (such as for a document)
+	 *
+	 * @return
+	 */
+	public JsonNode getBodyAsJsonNode() throws IOException {
+		if (body == null) {
+			return null;
+		}
+
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.readTree(body);
 	}
 
 	/**
