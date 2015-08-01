@@ -67,11 +67,10 @@ http://maven.apache.org/maven-v4_0_0.xsd">
 			<version>2.5.4</version>
 		</dependency>
 		<dependency>
-			<groupId>net.sf.json-lib</groupId>
+			<groupId>de.thm.json-lib</groupId>
 			<artifactId>json-lib</artifactId>
-			<version>2.4</version>
+			<version>1.0.0-2.4.1-9e2b337</version>
 			<scope>compile</scope>
-			<classifier>jdk15</classifier>
 			<exclusions>
 				<exclusion>
 					<groupId>org.jruby</groupId>

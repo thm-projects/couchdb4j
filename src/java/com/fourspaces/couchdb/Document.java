@@ -439,7 +439,7 @@ public class Document implements Map {
 		return getJSONObject().optString(arg0);
 	}
 	public Object put(Object arg0, Object arg1) {
-		return getJSONObject().put(arg0, arg1);
+		return getJSONObject().put((String) arg0, arg1);
 	}
 	public void putAll(Map arg0) {
 		getJSONObject().putAll(arg0);
