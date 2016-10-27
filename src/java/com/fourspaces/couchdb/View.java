@@ -283,6 +283,10 @@ public class View {
 		startKey = quote(key);
 	}
 
+	public void setStartKey(final long key) {
+		startKey = String.valueOf(key);
+	}
+
 	/**
 	 * Use this method if you need to add a single key parameter inside an array.
 	 * @param key
@@ -333,6 +337,10 @@ public class View {
 
 	public void setEndKey(final String key) {
 		endKey = quote(key);
+	}
+
+	public void setEndKey(final long key) {
+		endKey = String.valueOf(key);
 	}
 
 	public void setEndKey(final String... keys) {
