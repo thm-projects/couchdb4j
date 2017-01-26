@@ -287,7 +287,7 @@ public class Database {
 		saveDocument(doc, doc.getId());
 	}
 
-	public void bulkSaveDocuments(Document[] documents) throws IOException {
+	public boolean bulkSaveDocuments(Document[] documents) throws IOException {
 		CouchResponse resp = null;
 
 		resp = session.post(name + "/_bulk_docs", new JSONObject().accumulate("docs", documents).toString());
@@ -312,8 +312,12 @@ public class Database {
 				}
 				documents[i].setDatabase(this);
 			}
+
+			return true;
 		} else {
 			log.warn("Error bulk saving documents - " + resp.getErrorId() + " " + resp.getErrorReason());
+
+			return false;
 		}
 	}
 
