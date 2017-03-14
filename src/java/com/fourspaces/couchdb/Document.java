@@ -16,18 +16,18 @@
 
 package com.fourspaces.couchdb;
 
+import com.fourspaces.couchdb.util.JSONUtils;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import com.fourspaces.couchdb.util.JSONUtils;
-import net.sf.json.*;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 
 /**

@@ -17,14 +17,13 @@
 
 package com.fourspaces.couchdb;
 
+import net.sf.json.util.JSONUtils;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.sf.json.util.JSONUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * The View is the mechanism for performing Querys on a CouchDB instance. The view can be named or ad-hoc (see

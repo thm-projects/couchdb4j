@@ -17,17 +17,18 @@
 
 package com.fourspaces.couchdb;
 
-import java.io.IOException;
-
 import com.fourspaces.couchdb.util.JSONUtils;
-
-import static com.fourspaces.couchdb.util.JSONUtils.urlEncodePath;
-import net.sf.json.*;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
 import net.sf.json.util.JSONStringer;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.io.IOException;
+
+import static com.fourspaces.couchdb.util.JSONUtils.urlEncodePath;
 
 /**
  * This represents a particular database on the CouchDB server

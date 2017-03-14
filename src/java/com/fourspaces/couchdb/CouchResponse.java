@@ -16,13 +16,11 @@
  */
 package com.fourspaces.couchdb;
 
-import java.io.IOException;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fourspaces.couchdb.structure.DocumentResponse;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
@@ -35,8 +33,8 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.util.EntityUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourspaces.couchdb.structure.DocumentResponse;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * The CouchResponse parses the HTTP response returned by the CouchDB server. This is almost never called directly by

@@ -25,7 +25,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.fourspaces.couchdb.util;
 
 import net.sf.json.JSONFunction;
-import net.sf.json.JSONString;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

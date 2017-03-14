@@ -16,12 +16,12 @@
  */
 package com.fourspaces.couchdb;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The 'Update' is a mechanism for executing document update handlers against existing documents. These

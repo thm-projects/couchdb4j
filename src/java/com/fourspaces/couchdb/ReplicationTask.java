@@ -16,13 +16,12 @@
  */
 package com.fourspaces.couchdb;
 
-import java.net.InetAddress;
-import java.net.URL;
-
 import net.sf.json.JSONObject;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.net.InetAddress;
+import java.net.URL;
 
 /**
  * This class encapsulates the data for a replication task running on a couch server 
