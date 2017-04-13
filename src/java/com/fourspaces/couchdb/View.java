@@ -278,28 +278,20 @@ public class View {
 		this.stale = stale;
 	}
 
-	public void setStartKey(final String key) {
-		startKey = quote(key);
-	}
-
-	public void setStartKey(final long key) {
-		startKey = String.valueOf(key);
+	public void setStartKey(final Object key) {
+		startKey = encode(keyToString(key));
 	}
 
 	/**
 	 * Use this method if you need to add a single key parameter inside an array.
 	 * @param key
 	 */
-	public void setStartKeyArray(final String key) {
-		if (isNumber(key)) {
-			startKey = encode("[" + key + "]");
-		} else {
-			startKey = encode("[" + JSONUtils.quote(key) + "]");
-		}
+	public void setStartKeyArray(final Object key) {
+		startKey = encode("[" + keyToString(key) + "]");
 	}
 
-	public void setStartKey(final String... keys) {
-		startKey = toJsonArray(keys);
+	public void setStartKey(final Object... keys) {
+		startKey = encode(toJsonArray(keys));
 	}
 
 	/**
@@ -308,20 +300,16 @@ public class View {
 	 * We provide this method for convenience.
 	 * @param keys
 	 */
-	public void setStartKeyArray(final String... keys) {
-		this.setStartKey(keys);
+	public void setStartKeyArray(final Object... keys) {
+		setStartKey(keys);
 	}
 
 	/**
 	 * Use this method if you need to add a single key parameter inside an array.
 	 * @param key
 	 */
-	public void setEndKeyArray(final String key) {
-		if (isNumber(key)) {
-			endKey = encode("[" + key + "]");
-		} else {
-			endKey = encode("[" + JSONUtils.quote(key) + "]");
-		}
+	public void setEndKeyArray(final Object key) {
+		endKey = encode("[" + keyToString(key) + "]");
 	}
 
 	/**
@@ -330,36 +318,32 @@ public class View {
 	 * We provide this method for convenience.
 	 * @param keys
 	 */
-	public void setEndKeyArray(final String... keys) {
-		this.setEndKey(keys);
+	public void setEndKeyArray(final Object... keys) {
+		setEndKey(keys);
 	}
 
-	public void setEndKey(final String key) {
-		endKey = quote(key);
+	public void setEndKey(final Object key) {
+		endKey = encode(keyToString(key));
 	}
 
-	public void setEndKey(final long key) {
-		endKey = String.valueOf(key);
+	public void setEndKey(final Object... keys) {
+		endKey = encode(toJsonArray(keys));
 	}
 
-	public void setEndKey(final String... keys) {
-		endKey = toJsonArray(keys);
+	public void setKey(final Object key) {
+		this.key = encode(keyToString(key));
 	}
 
-	public void setKey(final String key) {
-		this.key = quote(key);
-	}
-
-	public void setKey(final String... keys) {
-		key = toJsonArray(keys);
+	public void setKey(final Object... keys) {
+		key = encode(toJsonArray(keys));
 	}
 
 	/**
 	 * Sets the 'keys' parameter. Instead of a single key, this parameter allows to specify multiple keys at once.
 	 * @param keys
 	 */
-	public void setKeys(List<String> keys) {
-		this.keys = toJsonArray(keys.toArray(new String[keys.size()]));
+	public void setKeys(List<?> keys) {
+		this.keys = encode(toJsonArray(keys.toArray(new Object[keys.size()])));
 	}
 
 	private String quote(final String string) {
@@ -375,24 +359,24 @@ public class View {
 		}
 	}
 
-	private String toJsonArray(final String[] strs) {
-		final List<String> strings = new ArrayList<String>();
-		for (final String string : strs) {
-			if (isNumber(string) || isPlaceholder(string) || isArray(string)) {
-				strings.add(string);
-			} else {
-				strings.add(JSONUtils.quote(string));
-			}
+	private String keyToString(Object key) {
+		if (key == null) {
+			return "null";
+		} else if (key instanceof Integer) {
+			return key.toString();
+		} else if ("{}".equals(key) || "[]".equals(key)) {
+			return key.toString();
+		} else {
+			return JSONUtils.quote(key.toString());
 		}
-		return encode("[" + StringUtils.join(strings, ",") + "]");
 	}
 
-	private boolean isNumber(final String string) {
-		return string.matches("^[0-9]+$");
-	}
-
-	private boolean isPlaceholder(final String string) {
-		return string.equals("{}");
+	private String toJsonArray(final Object[] strs) {
+		final List<String> strings = new ArrayList<String>();
+		for (final Object string : strs) {
+			strings.add(keyToString(string));
+		}
+		return "[" + StringUtils.join(strings, ",") + "]";
 	}
 
 	private boolean isArray(final String string) {
