@@ -50,6 +50,7 @@ public class View {
 	protected Boolean update;
 	protected Boolean reverse;
 	protected int skip;
+	protected boolean reduce = false;
 	protected Boolean group;
 	protected boolean includeDocs = false;
 	protected StaleMode stale = StaleMode.NONE;
@@ -156,6 +157,11 @@ public class View {
 				queryString += "&";
 			}
 			queryString += "group=true";
+		} else if (!reduce) {
+			if (!queryString.equals("")) {
+				queryString += "&";
+			}
+			queryString += "reduce=false";
 		}
 		if (keys != null) {
 			if (!queryString.equals("")) {
@@ -191,6 +197,10 @@ public class View {
 
 	public void setLimit(Integer limit) {
 		this.limit = limit;
+	}
+
+	public void setReduce(boolean reduce) {
+		this.reduce = reduce;
 	}
 
 	public void setGroup(Boolean group) {
