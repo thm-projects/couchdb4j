@@ -42,7 +42,7 @@ public class Database {
 	Log log = LogFactory.getLog(Database.class);
 	private final String name;
 	private int documentCount;
-	private int updateSeq;
+	private String updateSeq;
 
 	private Session session;
 
@@ -59,7 +59,7 @@ public class Database {
 	Database(JSONObject json, Session session) {
 		name = json.getString("db_name");
 		documentCount = json.getInt("doc_count");
-		updateSeq = json.getInt("update_seq");
+		updateSeq = json.getString("update_seq");
 
 		this.session = session;
 	}
@@ -91,7 +91,7 @@ public class Database {
 	 * @return
 	 * @see getAllDocuments()
 	 */
-	public int getUpdateSeq() {
+	public String getUpdateSeq() {
 		return updateSeq;
 	}
 
