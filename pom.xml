@@ -6,7 +6,7 @@ http://maven.apache.org/maven-v4_0_0.xsd">
 	<groupId>de.thm.couchdb4j</groupId>
 	<artifactId>couchdb4j</artifactId>
 	<name>CouchDB4J</name>
-	<version>0.9-SNAPSHOT</version>
+	<version>0.9</version>
 	<url>https://github.com/thm-projects/couchdb4j</url>
 
 	<build>
