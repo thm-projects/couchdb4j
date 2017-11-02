@@ -372,7 +372,9 @@ public class View {
 	private String keyToString(Object key) {
 		if (key == null) {
 			return "null";
-		} else if (key instanceof Boolean || key instanceof Integer) {
+		} else if (key instanceof Boolean || key instanceof Integer
+				|| key instanceof Long || key instanceof Short || key instanceof Byte
+				|| key instanceof Double || key instanceof Float) {
 			return key.toString();
 		} else if ("{}".equals(key) || "[]".equals(key)) {
 			return key.toString();
